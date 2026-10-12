@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+packages/
+TestResults/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Umgebung
+.env
+appsettings.*.local.json
+*.log
+.DS_Store
