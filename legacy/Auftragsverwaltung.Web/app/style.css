@@ -1,0 +1,9 @@
+body { padding-bottom: 40px; }
+footer { margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; }
+#meldung { position: fixed; top: 60px; right: 20px; z-index: 1000; min-width: 250px; }
+
+.label { background-color: #777; }
+.status-Offen { background-color: #f0ad4e; }
+.status-Erledigt { background-color: #5cb85c; }
+.status-Abgerechnet { background-color: #337ab7; }
+/* "In Arbeit" hat ein Leerzeichen, dafür greift keine Klasse */

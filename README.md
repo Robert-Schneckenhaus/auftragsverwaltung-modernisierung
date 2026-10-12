@@ -67,7 +67,9 @@ Details zu Voraussetzungen folgen, sobald die Implementierung steht.
 ## Struktur
 
 ```
-legacy/      Ausgangszustand: .NET Framework 4.8 + AngularJS
+legacy/      Ausgangszustand: .NET Framework 4.8 + AngularJS (Starten: legacy/README.md)
+  Auftragsverwaltung.Web/   Web API 2, EF6, AngularJS-Frontend
+  Datenbank/                SQL-Schema und Testdaten
 modern/      Zielzustand: aktuelles .NET + Angular
   src/       Api, Domain, Infrastructure
   tests/     Automatisierte Tests

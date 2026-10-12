@@ -6,13 +6,15 @@ Ziel: Die Auftragsverwaltung von .NET Framework 4.8 / AngularJS auf aktuelles .N
 
 Bewusst realistisch gebaut, mit typischen Altlasten:
 
-- ASP.NET Web API 2 auf .NET Framework 4.8, EF6 mit Database-First-EDMX
+- ASP.NET Web API 2 auf .NET Framework 4.8, EF6 auf einem per SQL-Skript gepflegten Schema
 - Geschäftslogik direkt in Controllern, keine Trennung von Schichten
-- AngularJS 1.x mit `$scope`, globalen Services und jQuery-Resten
-- Konfiguration in `Web.config`, Connection-String im Klartext
+- AngularJS 1.x mit `$scope`, globalen Funktionen und jQuery-Resten
+- Secrets in `Web.config`, Klartext-Passwörter, keine serverseitige Authentifizierung
 - Keine automatisierten Tests
 
 **Fachliche Module:** Kunden · Aufträge · Positionen/Material · Rechnungen · Benutzer
+
+Der vollständige [Altlasten-Katalog](../legacy/README.md#altlasten-katalog) mit allen Sicherheits-, Architektur- und fachlichen Eigenheiten steht im Legacy-README.
 
 ## Phasen
 

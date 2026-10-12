@@ -1,0 +1,55 @@
+<h3>Auftrag {{auftrag.AuftragsNr}} <small>{{auftrag.Datum | date:'dd.MM.yyyy'}}</small></h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <p>
+            <b><a href="#/kunden/{{auftrag.KdNr}}">{{auftrag.Kundenname}}</a></b><br />
+            {{auftrag.Kundenadresse}}
+        </p>
+        <p>{{auftrag.Beschreibung}}</p>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default" ng-hide="auftrag.Status == 'Abgerechnet'">
+            <div class="panel-body form-inline">
+                <select class="form-control" ng-model="neuerStatus">
+                    <option ng-repeat="s in statusListe" value="{{s}}">{{s}}</option>
+                </select>
+                <input class="form-control" ng-model="techniker" placeholder="Techniker" />
+                <button class="btn btn-default" ng-click="statusSpeichern()">Status speichern</button>
+            </div>
+        </div>
+        <div class="alert alert-success" ng-show="auftrag.RechNr">
+            Abgerechnet mit Rechnung {{auftrag.RechNr}}
+        </div>
+    </div>
+</div>
+
+<h4>Positionen</h4>
+<table class="table table-condensed">
+    <thead>
+        <tr><th>Bezeichnung</th><th class="text-right">Menge</th><th>Einheit</th><th class="text-right">Einzelpreis</th><th class="text-right">Gesamt</th><th></th></tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="p in auftrag.Positionen">
+            <td>{{p.Bezeichnung}}</td>
+            <td class="text-right">{{p.Menge | number:2}}</td>
+            <td>{{p.Einheit}}</td>
+            <td class="text-right">{{p.Einzelpreis | number:2}} €</td>
+            <td class="text-right">{{p.Gesamt | number:2}} €</td>
+            <td><a href="" ng-click="positionLoeschen(p)" ng-hide="auftrag.Status == 'Abgerechnet'">entfernen</a></td>
+        </tr>
+        <tr ng-hide="auftrag.Status == 'Abgerechnet'">
+            <td><input class="form-control input-sm" ng-model="neuePos.Bezeichnung" placeholder="Material oder Leistung" /></td>
+            <td><input class="form-control input-sm text-right" ng-model="neuePos.Menge" /></td>
+            <td><input class="form-control input-sm" ng-model="neuePos.Einheit" /></td>
+            <td><input class="form-control input-sm text-right" ng-model="neuePos.Einzelpreis" /></td>
+            <td></td>
+            <td><button class="btn btn-success btn-sm" ng-click="positionHinzufuegen()">+</button></td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr><th colspan="4" class="text-right">Summe netto</th><th class="text-right">{{auftrag.Summe | number:2}} €</th><th></th></tr>
+    </tfoot>
+</table>
+
+<button class="btn btn-primary" ng-show="auftrag.Status == 'Erledigt'" ng-click="rechnungErstellen()">Rechnung erstellen</button>

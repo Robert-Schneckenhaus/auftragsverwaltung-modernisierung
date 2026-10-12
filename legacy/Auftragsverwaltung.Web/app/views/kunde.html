@@ -1,0 +1,53 @@
+<h3 ng-show="neu">Neuer Kunde</h3>
+<h3 ng-hide="neu">Kunde {{kunde.KdNr}}</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <form ng-submit="speichern()">
+            <div class="form-group">
+                <label>Name *</label>
+                <input class="form-control" ng-model="kunde.Name" />
+            </div>
+            <div class="form-group">
+                <label>Straße</label>
+                <input class="form-control" ng-model="kunde.Strasse" />
+            </div>
+            <div class="row">
+                <div class="form-group col-xs-4">
+                    <label>PLZ</label>
+                    <input class="form-control" ng-model="kunde.PLZ" />
+                </div>
+                <div class="form-group col-xs-8">
+                    <label>Ort</label>
+                    <input class="form-control" ng-model="kunde.Ort" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Telefon</label>
+                <input class="form-control" ng-model="kunde.Telefon" />
+            </div>
+            <div class="form-group">
+                <label>E-Mail</label>
+                <input class="form-control" ng-model="kunde.Email" />
+            </div>
+            <div class="form-group">
+                <label>Bemerkung</label>
+                <textarea class="form-control" ng-model="kunde.Bemerkung"></textarea>
+            </div>
+            <button class="btn btn-primary">Speichern</button>
+            <button type="button" class="btn btn-danger" ng-hide="neu" ng-click="deaktivieren()">Deaktivieren</button>
+        </form>
+    </div>
+
+    <div class="col-md-6" ng-hide="neu">
+        <h4>Aufträge <button class="btn btn-success btn-xs pull-right" ng-click="auftragAnlegen()">+ Neuer Auftrag</button></h4>
+        <table class="table table-condensed">
+            <tr ng-repeat="a in kunde.Auftraege">
+                <td><a href="#/auftraege/{{a.AuftragsNr}}">{{a.AuftragsNr}}</a></td>
+                <td>{{a.Datum | date:'dd.MM.yyyy'}}</td>
+                <td>{{a.Beschreibung}}</td>
+                <td><span class="label label-default">{{a.Status}}</span></td>
+            </tr>
+        </table>
+    </div>
+</div>

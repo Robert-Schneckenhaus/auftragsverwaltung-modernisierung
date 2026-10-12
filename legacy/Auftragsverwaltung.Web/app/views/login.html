@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="col-md-4 col-md-offset-4">
+        <h3>Anmelden</h3>
+        <form ng-submit="anmelden()">
+            <div class="form-group">
+                <label>Benutzer</label>
+                <input class="form-control" ng-model="daten.login" autofocus />
+            </div>
+            <div class="form-group">
+                <label>Passwort</label>
+                <input type="password" class="form-control" ng-model="daten.passwort" />
+            </div>
+            <div class="alert alert-danger" ng-show="fehler">{{fehler}}</div>
+            <button class="btn btn-primary">Anmelden</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+<h3>Rechnungen</h3>
+
+<div class="checkbox">
+    <label><input type="checkbox" ng-model="nurOffene" ng-change="laden()" /> Nur offene Rechnungen</label>
+</div>
+
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr><th>RechNr</th><th>Datum</th><th>Auftrag</th><th>Kunde</th><th class="text-right">Netto</th><th class="text-right">MwSt</th><th class="text-right">Brutto</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="r in rechnungen">
+            <td>{{r.RechNr}}</td>
+            <td>{{r.Datum | date:'dd.MM.yyyy'}}</td>
+            <td><a href="#/auftraege/{{r.AuftragsNr}}">{{r.AuftragsNr}}</a></td>
+            <td>{{r.Kundenname}}</td>
+            <td class="text-right">{{r.Netto | number:2}} €</td>
+            <td class="text-right">{{r.MwSt | number:2}} €</td>
+            <td class="text-right">{{r.Brutto | number:2}} €</td>
+            <td>
+                <span class="label label-success" ng-show="r.Bezahlt">bezahlt</span>
+                <button class="btn btn-default btn-xs" ng-hide="r.Bezahlt" ng-click="bezahlt(r)">als bezahlt markieren</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p class="lead">Offene Forderungen: <b>{{summeOffen | number:2}} €</b></p>

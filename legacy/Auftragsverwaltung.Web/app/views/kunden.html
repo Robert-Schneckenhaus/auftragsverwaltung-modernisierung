@@ -1,0 +1,22 @@
+<h3>Kunden <a href="#/kunden/neu" class="btn btn-success btn-sm pull-right">+ Neuer Kunde</a></h3>
+
+<form class="form-inline" ng-submit="laden()">
+    <input class="form-control" ng-model="suche" placeholder="Name, Ort oder PLZ" />
+    <button class="btn btn-default">Suchen</button>
+</form>
+<br />
+
+<table class="table table-striped table-condensed">
+    <thead>
+        <tr><th>KdNr</th><th>Name</th><th>Adresse</th><th>Telefon</th></tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="k in kunden">
+            <td><a href="#/kunden/{{k.KdNr}}">{{k.KdNr}}</a></td>
+            <td>{{k.Name}}</td>
+            <td>{{k.Strasse}}, {{k.PLZ}} {{k.Ort}}</td>
+            <td>{{k.Telefon}}</td>
+        </tr>
+        <tr ng-show="kunden.length == 0"><td colspan="4">Keine Kunden gefunden</td></tr>
+    </tbody>
+</table>

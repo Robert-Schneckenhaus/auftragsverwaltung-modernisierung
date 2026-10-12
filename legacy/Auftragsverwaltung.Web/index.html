@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html ng-app="avApp">
+<head>
+    <meta charset="utf-8" />
+    <title>Auftragsverwaltung - Müller Haustechnik</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="app/style.css" />
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#/auftraege">Müller Haustechnik</a>
+            </div>
+            <ul class="nav navbar-nav" ng-show="benutzer">
+                <li><a href="#/auftraege">Aufträge</a></li>
+                <li><a href="#/kunden">Kunden</a></li>
+                <li ng-show="benutzer.Rolle == 'Admin'"><a href="#/rechnungen">Rechnungen</a></li>
+            </ul>
+            <p class="navbar-text navbar-right" ng-show="benutzer">
+                Angemeldet als <b>{{benutzer.Login}}</b>
+                &nbsp;<a href="" ng-click="abmelden()" class="navbar-link">Abmelden</a>
+            </p>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="meldung" class="alert alert-info" style="display:none"></div>
+        <div ng-view></div>
+    </div>
+
+    <footer class="container text-muted small">
+        Auftragsverwaltung v1.4 &middot; &copy; 2014 Müller Haustechnik GmbH
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-route.min.js"></script>
+    <script src="app/app.js"></script>
+    <script src="app/services.js"></script>
+    <script src="app/controllers.js"></script>
+</body>
+</html>
