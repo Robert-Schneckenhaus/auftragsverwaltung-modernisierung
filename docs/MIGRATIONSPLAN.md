@@ -87,7 +87,7 @@ Claude Code wird als Werkzeug eingesetzt, nicht als Autopilot.
   - [ ] Aufträge und Positionen
   - [ ] Rechnungen
   - [x] Login und Sicherheits-Baseline vorgezogen ([ADR 0003](adr/0003-sicherheits-baseline.md)): Passwort-Hashing, Cookie-Anmeldung, Anmeldepflicht hinter Feature-Flag, 8 Sicherheitstests
-  - [ ] Proxy prüft Anmeldung auch für Legacy-Routen, danach Feature-Flag einschalten
+  - [x] Proxy prüft Anmeldung auch für Legacy-Routen, Rechnungen nur für Admins (6 Proxy-Tests gegen eine Legacy-Attrappe)
 - [ ] **Phase 4: Frontend**
 - [ ] **Phase 5: Abschluss**
 
@@ -117,4 +117,4 @@ dotnet test modern\tests\Auftragsverwaltung.Sicherheitstests
 
 Legacy-Anwendung (Port 51400), moderne API (`dotnet run --project modern/src/Auftragsverwaltung.Api`, Port 5080) und Proxy (`dotnet run --project modern/src/Auftragsverwaltung.Proxy`, Port 5000) starten, dann http://localhost:5000 öffnen. Das alte AngularJS-Frontend läuft unverändert, Login und Kundenverwaltung werden aber bereits vom modernen Backend bedient.
 
-Vorher einmalig `modern/Datenbank/001_passwort_hash.sql` auf die Datenbank anwenden.
+Vorher einmalig `modern/Datenbank/001_passwort_hash.sql` auf die Datenbank anwenden. Mit `Sicherheit__AnmeldungErforderlich=true` für API **und** Proxy sind auch die noch nicht migrierten Legacy-Endpunkte nur nach Anmeldung erreichbar. API zuerst starten, beide teilen sich den Schlüsselbund in `modern/.dp-schluessel`.

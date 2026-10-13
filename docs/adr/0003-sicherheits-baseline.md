@@ -1,6 +1,6 @@
 # ADR 0003: Sicherheits-Baseline für das moderne Backend
 
-**Status:** Akzeptiert (umgesetzt, Feature-Flag noch aus)
+**Status:** Akzeptiert (vollständig umgesetzt, Feature-Flag standardmäßig aus)
 
 ## Kontext
 Das moderne Backend übernimmt bisher den API-Vertrag des Legacy-Systems unverändert (siehe Charakterisierungstests). Dazu gehören auch die Sicherheitsmängel aus dem [Altlasten-Katalog](../../legacy/README.md#altlasten-katalog):
@@ -24,16 +24,29 @@ Diese Mängel einfach zu übernehmen ist keine Option. Sie sofort zu beheben wü
 |---|---|
 | Hash-Migration beim Login | `modern/src/Auftragsverwaltung.Domain/Anmeldung/Benutzer.cs` |
 | Hashverfahren (ASP.NET Core `PasswordHasher`, PBKDF2) | `modern/src/Auftragsverwaltung.Api/Sicherheit/PasswortHasher.cs` |
-| Cookie, Policies, Feature-Flag | `modern/src/Auftragsverwaltung.Api/Sicherheit/SicherheitExtensions.cs` |
+| Cookie, Data Protection, Richtlinien, Feature-Flag (gemeinsam für API und Proxy) | `modern/src/Auftragsverwaltung.Sicherheit/GemeinsameAnmeldung.cs` |
+| Schutz der Legacy-Routen im Proxy | `modern/src/Auftragsverwaltung.Proxy/appsettings.json` (`AuthorizationPolicy` je Route) |
 | Schemaänderung | `modern/Datenbank/001_passwort_hash.sql` |
 | Charakterisierungstests Login (Legacy und modern) | `modern/tests/Auftragsverwaltung.Charakterisierung/LoginTests.cs` |
-| Sicherheitstests (nur modern, Flag an) | `modern/tests/Auftragsverwaltung.Sicherheitstests` |
+| Sicherheits- und Proxy-Tests (nur modern, Flag an) | `modern/tests/Auftragsverwaltung.Sicherheitstests` |
 
-Die CI startet die API zweimal: einmal wie das Legacy-System (Charakterisierungstests) und einmal mit `Sicherheit__AnmeldungErforderlich=true` (Sicherheitstests). Danach prüft sie in der Datenbank, dass für angemeldete Benutzer kein Klartextpasswort mehr existiert.
+Die CI startet die API zweimal: einmal wie das Legacy-System (Charakterisierungstests) und einmal mit `Sicherheit__AnmeldungErforderlich=true` (Sicherheitstests). Danach startet sie den Proxy mit einer [Legacy-Attrappe](../../modern/tests/Auftragsverwaltung.Sicherheitstests/LegacyAttrappe) dahinter und prüft, dass Legacy-Routen geschützt sind. Zum Schluss prüft sie in der Datenbank, dass für angemeldete Benutzer kein Klartextpasswort mehr existiert.
+
+### Schutz im Proxy
+
+| Route | Ziel | Anforderung (Flag an) |
+|---|---|---|
+| `/api/kunden/**`, `/api/login`, `/api/logout` | modern | prüft die API selbst |
+| `/api/rechnungen/**` | legacy | angemeldet **und** Rolle `Admin` |
+| `/api/**` | legacy | angemeldet |
+| alles andere (AngularJS-Frontend) | legacy | keine |
+
+Der Proxy kann das Cookie der API prüfen, weil beide denselben Data-Protection-Schlüsselbund verwenden (`Sicherheit:SchluesselPfad`).
 
 ## Konsequenzen
 - Solange das Flag aus ist, bleibt das bekannte Risiko bestehen; das muss mit dem Kunden zeitlich begrenzt vereinbart werden
-- **Das Flag schützt nur Endpunkte, die bereits migriert sind.** Aufträge und Rechnungen laufen weiterhin über das Legacy-Backend und bleiben offen, bis sie migriert sind oder der Proxy die Anmeldung selbst prüft (siehe nächste Schritte)
+- Der Schutz der Legacy-Endpunkte greift nur über den Proxy. **Der direkte Zugang zum Legacy-Server muss in Produktion gesperrt werden** (Firewall bzw. IIS-Bindung nur auf localhost)
+- Der Schlüsselbund ist ein Geheimnis: In Produktion das Verzeichnis zusätzlich verschlüsseln (Zertifikat oder DPAPI) und nur API und Proxy Zugriff geben
 - **Bewusste Verhaltensänderung:** Passwörter werden mit Groß-/Kleinschreibung geprüft. Im Legacy-System funktionierte z. B. `ADMIN` statt `admin`, weil der Vergleich in SQL stattfand
 - Benutzer, die sich nie anmelden, behalten ihr Klartextpasswort. Vor Abschaltung des Legacy-Systems müssen diese Konten zurückgesetzt werden
 - Das Legacy-Login funktioniert für umgestellte Benutzer nicht mehr. Unkritisch, weil `api/login` über den Proxy bereits vom modernen Backend bedient wird
@@ -41,8 +54,8 @@ Die CI startet die API zweimal: einmal wie das Legacy-System (Charakterisierungs
 - Fehlerdetails (Stacktraces) werden im modernen Backend grundsätzlich nicht ausgeliefert; das ändert keinen dokumentierten Vertrag
 
 ## Nächste Schritte
-1. Proxy prüft das Anmelde-Cookie auch für Legacy-Routen (gemeinsamer Data-Protection-Schlüssel für API und Proxy). Danach kann das Flag in Produktion eingeschaltet werden
-2. Policy `NurAdmin` auf `api/rechnungen` anwenden, sobald das Modul migriert ist
+1. Flag in Produktion einschalten, sobald der direkte Zugang zum Legacy-Server gesperrt ist
+2. Beim Migrieren von `api/rechnungen` die Richtlinie `NurAdmin` in der API übernehmen
 
 ## Offene Fragen an den Fachbereich
 - Sollen Schweizer Postleitzahlen (4-stellig) erlaubt werden? Aktuell lehnt die Validierung sie ab.

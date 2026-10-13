@@ -56,7 +56,7 @@ Kurz gesagt: KI beschleunigt Fleißarbeit wie das Umschreiben von Controllern od
 - ✅ Legacy-Anwendung inkl. [Altlasten-Katalog](legacy/README.md#altlasten-katalog)
 - ✅ Modernes Fundament: .NET 10, EF Core auf dem bestehenden Schema, YARP als Strangler-Proxy
 - ✅ **Modul Kunden migriert**, abgesichert durch Charakterisierungstests, die in der CI gegen einen echten SQL Server laufen
-- ✅ **Login und Sicherheits-Baseline**: Klartextpasswörter werden beim Login transparent gehasht, Cookie-Anmeldung, serverseitige Anmeldepflicht ([ADR 0003](docs/adr/0003-sicherheits-baseline.md)), abgesichert durch eigene Sicherheitstests
+- ✅ **Login und Sicherheits-Baseline**: Klartextpasswörter werden beim Login transparent gehasht, Cookie-Anmeldung, serverseitige Anmeldepflicht ([ADR 0003](docs/adr/0003-sicherheits-baseline.md)). Der Proxy schützt dabei auch die noch nicht migrierten Legacy-Endpunkte, abgesichert durch eigene Sicherheits- und Proxy-Tests
 - ⏳ Aufträge, Rechnungen · Angular-Frontend
 
 Details und nächste Schritte: [Migrationsplan](docs/MIGRATIONSPLAN.md#fortschritt)
@@ -88,7 +88,7 @@ legacy/      Ausgangszustand: .NET Framework 4.8 + AngularJS (Starten: legacy/RE
   Auftragsverwaltung.Web/   Web API 2, EF6, AngularJS-Frontend
   Datenbank/                SQL-Schema und Testdaten
 modern/      Zielzustand: aktuelles .NET + Angular
-  src/       Api, Domain (Fachlogik), Infrastructure (EF Core), Proxy (YARP)
+  src/       Api, Domain (Fachlogik), Infrastructure (EF Core), Proxy (YARP), Sicherheit (gemeinsame Anmeldung)
   tests/     Domain-Tests, Charakterisierungstests (gegen legacy/ und modern/), Sicherheitstests
   Datenbank/ Schemaänderungen des modernen Systems
   web/       Angular-Frontend (folgt)
