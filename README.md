@@ -55,8 +55,9 @@ Kurz gesagt: KI beschleunigt Fleißarbeit wie das Umschreiben von Controllern od
 
 - ✅ Legacy-Anwendung inkl. [Altlasten-Katalog](legacy/README.md#altlasten-katalog)
 - ✅ Modernes Fundament: .NET 10, EF Core auf dem bestehenden Schema, YARP als Strangler-Proxy
-- ✅ **Modul Kunden migriert**, abgesichert durch 19 Charakterisierungstests, die in der CI gegen einen echten SQL Server laufen
-- ⏳ Aufträge, Rechnungen, Login · Angular-Frontend
+- ✅ **Modul Kunden migriert**, abgesichert durch Charakterisierungstests, die in der CI gegen einen echten SQL Server laufen
+- ✅ **Login und Sicherheits-Baseline**: Klartextpasswörter werden beim Login transparent gehasht, Cookie-Anmeldung, serverseitige Anmeldepflicht ([ADR 0003](docs/adr/0003-sicherheits-baseline.md)), abgesichert durch eigene Sicherheitstests
+- ⏳ Aufträge, Rechnungen · Angular-Frontend
 
 Details und nächste Schritte: [Migrationsplan](docs/MIGRATIONSPLAN.md#fortschritt)
 
@@ -68,6 +69,7 @@ Voraussetzungen: .NET 10 SDK, SQL Server (LocalDB genügt), für `legacy/` zusä
 # Datenbank anlegen (einmalig bzw. für frische Testdaten)
 sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i legacy/Datenbank/01_schema.sql
 sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i legacy/Datenbank/02_testdaten.sql
+sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i modern/Datenbank/001_passwort_hash.sql
 
 # Modernes Backend (http://localhost:5080)
 dotnet run --project modern/src/Auftragsverwaltung.Api
@@ -87,7 +89,8 @@ legacy/      Ausgangszustand: .NET Framework 4.8 + AngularJS (Starten: legacy/RE
   Datenbank/                SQL-Schema und Testdaten
 modern/      Zielzustand: aktuelles .NET + Angular
   src/       Api, Domain (Fachlogik), Infrastructure (EF Core), Proxy (YARP)
-  tests/     Domain-Tests, Charakterisierungstests (gegen legacy/ und modern/)
+  tests/     Domain-Tests, Charakterisierungstests (gegen legacy/ und modern/), Sicherheitstests
+  Datenbank/ Schemaänderungen des modernen Systems
   web/       Angular-Frontend (folgt)
 docs/        Migrationsplan, Architekturentscheidungen (ADRs), Screenshots
 ```

@@ -52,6 +52,7 @@ Diese Liste ist die Grundlage für die Modernisierung. Jede Altlast wird im mode
 
 **Sicherheit**
 - Passwörter im Klartext in der Datenbank
+- Passwortvergleich in SQL ohne Beachtung der Groß-/Kleinschreibung (`ADMIN` funktioniert statt `admin`)
 - „Token“ ist nur Base64 aus Login und Rolle und wird serverseitig nie geprüft, alle API-Endpunkte sind ohne Anmeldung erreichbar
 - Rechteprüfung (Rechnungen nur für Admins) nur im Frontend
 - Secrets im Klartext in `Web.config` (SMTP-Passwort, auskommentierter `sa`-Zugang)

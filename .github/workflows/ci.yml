@@ -17,7 +17,7 @@ jobs:
       - run: msbuild legacy/Auftragsverwaltung.sln /p:Configuration=Release /m /v:minimal
 
   modern:
-    name: Modern (.NET 10) mit Charakterisierungstests
+    name: Modern (.NET 10) mit Charakterisierungs- und Sicherheitstests
     runs-on: ubuntu-latest
     env:
       # Nur für den kurzlebigen Test-Container in der CI, kein echtes Secret

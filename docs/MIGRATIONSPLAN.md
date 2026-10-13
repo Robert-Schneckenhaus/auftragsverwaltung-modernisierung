@@ -77,16 +77,17 @@ Claude Code wird als Werkzeug eingesetzt, nicht als Autopilot.
 
 - [x] **Phase 0: Bestandsaufnahme**: API-Übersicht und Altlasten-Katalog in [`legacy/README.md`](../legacy/README.md)
 - [ ] **Phase 1: Sicherheitsnetz**
-  - [x] Charakterisierungstests Modul Kunden (19 Tests, `modern/tests/Auftragsverwaltung.Charakterisierung`)
+  - [x] Charakterisierungstests Modul Kunden (19 Tests) und Login (6 Tests), `modern/tests/Auftragsverwaltung.Charakterisierung`
   - [x] Grün gegen `modern/` (CI)
   - [ ] Grün gegen `legacy/` (lokal unter Windows, siehe unten)
-  - [ ] Module Aufträge, Rechnungen, Login
+  - [ ] Module Aufträge, Rechnungen
 - [x] **Phase 2: Fundament**: Solution, EF Core auf Legacy-Schema, CI mit SQL Server, YARP-Proxy
 - [ ] **Phase 3: Backend**
   - [x] Kunden: migriert, Proxy-Route `api/kunden` zeigt auf `modern/`
   - [ ] Aufträge und Positionen
   - [ ] Rechnungen
-  - [ ] Benutzer und Authentifizierung (Vorschlag: vorziehen, siehe [ADR 0003](adr/0003-sicherheits-baseline.md))
+  - [x] Login und Sicherheits-Baseline vorgezogen ([ADR 0003](adr/0003-sicherheits-baseline.md)): Passwort-Hashing, Cookie-Anmeldung, Anmeldepflicht hinter Feature-Flag, 8 Sicherheitstests
+  - [ ] Proxy prüft Anmeldung auch für Legacy-Routen, danach Feature-Flag einschalten
 - [ ] **Phase 4: Frontend**
 - [ ] **Phase 5: Abschluss**
 
@@ -102,6 +103,18 @@ Claude Code wird als Werkzeug eingesetzt, nicht als Autopilot.
 
 Ohne `AV_BASE_URL` werden die Tests übersprungen.
 
+**Wichtig:** Das moderne Backend stellt beim Login Passwörter auf Hashes um. Für Legacy-Läufe deshalb immer eine frisch angelegte Datenbank verwenden.
+
+Die Sicherheitstests laufen nur gegen das moderne Backend mit aktiver Anmeldepflicht:
+```bat
+set Sicherheit__AnmeldungErforderlich=true
+dotnet run --project modern\src\Auftragsverwaltung.Api --urls http://localhost:5081
+set AV_SICHERHEIT_URL=http://localhost:5081/
+dotnet test modern\tests\Auftragsverwaltung.Sicherheitstests
+```
+
 ### Strangler-Proxy lokal ausprobieren
 
-Legacy-Anwendung (Port 51400), moderne API (`dotnet run --project modern/src/Auftragsverwaltung.Api`, Port 5080) und Proxy (`dotnet run --project modern/src/Auftragsverwaltung.Proxy`, Port 5000) starten, dann http://localhost:5000 öffnen. Das alte AngularJS-Frontend läuft unverändert, die Kundenverwaltung wird aber bereits vom modernen Backend bedient.
+Legacy-Anwendung (Port 51400), moderne API (`dotnet run --project modern/src/Auftragsverwaltung.Api`, Port 5080) und Proxy (`dotnet run --project modern/src/Auftragsverwaltung.Proxy`, Port 5000) starten, dann http://localhost:5000 öffnen. Das alte AngularJS-Frontend läuft unverändert, Login und Kundenverwaltung werden aber bereits vom modernen Backend bedient.
+
+Vorher einmalig `modern/Datenbank/001_passwort_hash.sql` auf die Datenbank anwenden.
