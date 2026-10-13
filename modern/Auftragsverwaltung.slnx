@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Auftragsverwaltung.Api/Auftragsverwaltung.Api.csproj" />
+    <Project Path="src/Auftragsverwaltung.Domain/Auftragsverwaltung.Domain.csproj" />
+    <Project Path="src/Auftragsverwaltung.Infrastructure/Auftragsverwaltung.Infrastructure.csproj" />
+    <Project Path="src/Auftragsverwaltung.Proxy/Auftragsverwaltung.Proxy.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Auftragsverwaltung.Charakterisierung/Auftragsverwaltung.Charakterisierung.csproj" />
+    <Project Path="tests/Auftragsverwaltung.Domain.Tests/Auftragsverwaltung.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

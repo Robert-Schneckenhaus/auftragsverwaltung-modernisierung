@@ -11,8 +11,8 @@ Voraussetzungen: Visual Studio 2022 mit Workload „ASP.NET und Webentwicklung�
 
 1. Datenbank anlegen:
    ```bat
-   sqlcmd -S "(LocalDB)\MSSQLLocalDB" -i Datenbank\01_schema.sql
-   sqlcmd -S "(LocalDB)\MSSQLLocalDB" -i Datenbank\02_testdaten.sql
+   sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i Datenbank\01_schema.sql
+   sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i Datenbank\02_testdaten.sql
    ```
 2. `Auftragsverwaltung.sln` in Visual Studio öffnen, NuGet-Pakete werden beim Build wiederhergestellt
 3. Mit F5 starten (IIS Express, http://localhost:51400/)

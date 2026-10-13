@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\Auftragsverwaltung.Domain\Auftragsverwaltung.Domain.csproj" />
+    <ProjectReference Include="..\Auftragsverwaltung.Infrastructure\Auftragsverwaltung.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

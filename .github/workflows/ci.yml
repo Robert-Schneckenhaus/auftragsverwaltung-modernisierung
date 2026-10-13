@@ -16,31 +16,59 @@ jobs:
       - run: nuget restore legacy/Auftragsverwaltung.sln
       - run: msbuild legacy/Auftragsverwaltung.sln /p:Configuration=Release /m /v:minimal
 
-  backend:
+  modern:
+    name: Modern (.NET 10) mit Charakterisierungstests
     runs-on: ubuntu-latest
-    if: hashFiles('modern/**/*.sln', 'modern/**/*.slnx') != ''
+    env:
+      # Nur für den kurzlebigen Test-Container in der CI, kein echtes Secret
+      SA_PASSWORD: CiOnly_Test123!
+      DOTNET_NOLOGO: 1
+    services:
+      sql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: CiOnly_Test123!
+        ports:
+          - 1433:1433
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - run: dotnet restore modern
-      - run: dotnet build modern --no-restore -c Release
-      - run: dotnet test modern --no-build -c Release
-      - run: dotnet list modern package --vulnerable --include-transitive
 
-  frontend:
-    runs-on: ubuntu-latest
-    if: hashFiles('modern/web/package.json') != ''
-    defaults:
-      run:
-        working-directory: modern/web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm ci
-      - run: npm run build
-      - run: npm test -- --watch=false
-      - run: npm audit --audit-level=high
+      - name: Build
+        run: dotnet build modern/Auftragsverwaltung.slnx -c Release
+
+      - name: Domain-Tests
+        run: dotnet test modern/tests/Auftragsverwaltung.Domain.Tests -c Release --no-build
+
+      - name: Datenbank aus Legacy-Skripten anlegen
+        run: |
+          SQL=${{ job.services.sql.id }}
+          SQLCMD="/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P $SA_PASSWORD -b"
+          for i in $(seq 1 30); do docker exec $SQL $SQLCMD -Q "SELECT 1" > /dev/null 2>&1 && break; sleep 2; done
+          for f in legacy/Datenbank/*.sql; do
+            docker cp "$f" $SQL:/tmp/skript.sql
+            docker exec $SQL $SQLCMD -f 65001 -i /tmp/skript.sql
+          done
+
+      - name: Moderne API starten
+        env:
+          ConnectionStrings__AvDb: Server=localhost,1433;Database=Auftragsverwaltung;User ID=sa;Password=${{ env.SA_PASSWORD }};TrustServerCertificate=True
+        run: |
+          dotnet modern/src/Auftragsverwaltung.Api/bin/Release/net10.0/Auftragsverwaltung.Api.dll --urls http://localhost:5080 > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:5080/health && exit 0; sleep 1; done
+          cat api.log; exit 1
+
+      - name: Charakterisierungstests gegen die moderne API
+        env:
+          AV_BASE_URL: http://localhost:5080/
+        run: dotnet test modern/tests/Auftragsverwaltung.Charakterisierung -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: API-Log bei Fehler
+        if: failure()
+        run: cat api.log || true
+
+      - name: Abhängigkeiten auf Sicherheitslücken prüfen
+        run: dotnet list modern/Auftragsverwaltung.slnx package --vulnerable --include-transitive
