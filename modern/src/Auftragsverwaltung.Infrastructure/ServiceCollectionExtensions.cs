@@ -1,3 +1,4 @@
+using Auftragsverwaltung.Domain.Anmeldung;
 using Auftragsverwaltung.Domain.Kunden;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<AvDbContext>(o => o.UseSqlServer(connectionString));
         services.AddScoped<IKundenRepository, KundenRepository>();
+        services.AddScoped<IBenutzerRepository, BenutzerRepository>();
         return services;
     }
 }

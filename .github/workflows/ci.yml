@@ -43,32 +43,48 @@ jobs:
       - name: Domain-Tests
         run: dotnet test modern/tests/Auftragsverwaltung.Domain.Tests -c Release --no-build
 
-      - name: Datenbank aus Legacy-Skripten anlegen
+      - name: Datenbank aus Legacy-Skripten anlegen, moderne Schemaänderungen anwenden
         run: |
           SQL=${{ job.services.sql.id }}
           SQLCMD="/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P $SA_PASSWORD -b"
           for i in $(seq 1 30); do docker exec $SQL $SQLCMD -Q "SELECT 1" > /dev/null 2>&1 && break; sleep 2; done
-          for f in legacy/Datenbank/*.sql; do
+          for f in legacy/Datenbank/*.sql modern/Datenbank/*.sql; do
             docker cp "$f" $SQL:/tmp/skript.sql
             docker exec $SQL $SQLCMD -f 65001 -i /tmp/skript.sql
           done
 
-      - name: Moderne API starten
+      - name: Moderne API starten (5080 wie Legacy, 5081 mit Anmeldepflicht)
         env:
           ConnectionStrings__AvDb: Server=localhost,1433;Database=Auftragsverwaltung;User ID=sa;Password=${{ env.SA_PASSWORD }};TrustServerCertificate=True
         run: |
-          dotnet modern/src/Auftragsverwaltung.Api/bin/Release/net10.0/Auftragsverwaltung.Api.dll --urls http://localhost:5080 > api.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf http://localhost:5080/health && exit 0; sleep 1; done
-          cat api.log; exit 1
+          API=modern/src/Auftragsverwaltung.Api/bin/Release/net10.0/Auftragsverwaltung.Api.dll
+          dotnet $API --urls http://localhost:5080 > api.log 2>&1 &
+          Sicherheit__AnmeldungErforderlich=true dotnet $API --urls http://localhost:5081 > api-sicher.log 2>&1 &
+          for port in 5080 5081; do
+            for i in $(seq 1 30); do curl -sf http://localhost:$port/health > /dev/null && break; sleep 1; done
+            curl -sf http://localhost:$port/health > /dev/null || { cat api.log api-sicher.log; exit 1; }
+          done
 
       - name: Charakterisierungstests gegen die moderne API
         env:
           AV_BASE_URL: http://localhost:5080/
         run: dotnet test modern/tests/Auftragsverwaltung.Charakterisierung -c Release --no-build --logger "console;verbosity=normal"
 
-      - name: API-Log bei Fehler
+      - name: Sicherheitstests (ADR 0003) gegen die API mit Anmeldepflicht
+        env:
+          AV_SICHERHEIT_URL: http://localhost:5081/
+        run: dotnet test modern/tests/Auftragsverwaltung.Sicherheitstests -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: Prüfen, dass angemeldete Benutzer keine Klartextpasswörter mehr haben
+        run: |
+          docker exec ${{ job.services.sql.id }} /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P $SA_PASSWORD -b -d Auftragsverwaltung -Q "
+            SELECT Login, CASE WHEN PasswortHash IS NULL THEN 'Klartext' ELSE 'Hash' END AS Verfahren FROM tblBenutzer;
+            IF EXISTS (SELECT 1 FROM tblBenutzer WHERE Login IN ('admin','sabine') AND (PasswortHash IS NULL OR Passwort <> ''))
+              RAISERROR('Klartextpasswort nach Login noch vorhanden', 16, 1);"
+
+      - name: API-Logs bei Fehler
         if: failure()
-        run: cat api.log || true
+        run: cat api.log api-sicher.log || true
 
       - name: Abhängigkeiten auf Sicherheitslücken prüfen
         run: dotnet list modern/Auftragsverwaltung.slnx package --vulnerable --include-transitive

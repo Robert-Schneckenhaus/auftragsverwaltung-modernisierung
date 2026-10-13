@@ -8,5 +8,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Auftragsverwaltung.Charakterisierung/Auftragsverwaltung.Charakterisierung.csproj" />
     <Project Path="tests/Auftragsverwaltung.Domain.Tests/Auftragsverwaltung.Domain.Tests.csproj" />
+    <Project Path="tests/Auftragsverwaltung.Sicherheitstests/Auftragsverwaltung.Sicherheitstests.csproj" />
   </Folder>
 </Solution>

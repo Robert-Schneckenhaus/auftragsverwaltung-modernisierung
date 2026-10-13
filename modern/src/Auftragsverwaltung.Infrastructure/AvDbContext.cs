@@ -1,3 +1,4 @@
+using Auftragsverwaltung.Domain.Anmeldung;
 using Auftragsverwaltung.Domain.Kunden;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace Auftragsverwaltung.Infrastructure;
 public sealed class AvDbContext(DbContextOptions<AvDbContext> options) : DbContext(options)
 {
     public DbSet<Kunde> Kunden => Set<Kunde>();
+    public DbSet<Benutzer> Benutzer => Set<Benutzer>();
     internal DbSet<AuftragZeile> Auftraege => Set<AuftragZeile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +28,17 @@ public sealed class AvDbContext(DbContextOptions<AvDbContext> options) : DbConte
             e.Property(k => k.Telefon).HasMaxLength(50);
             e.Property(k => k.Email).HasMaxLength(200);
             e.Property(k => k.AngelegtAm).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<Benutzer>(e =>
+        {
+            e.ToTable("tblBenutzer");
+            e.HasKey(b => b.Id);
+            e.Property(b => b.Login).HasMaxLength(50).IsRequired();
+            e.Property(b => b.Passwort).HasMaxLength(100).IsRequired();
+            e.Property(b => b.PasswortHash).HasMaxLength(200); // modern/Datenbank/001_passwort_hash.sql
+            e.Property(b => b.Rolle).HasMaxLength(20).IsRequired();
+            e.Ignore(b => b.KlartextVorhanden);
         });
 
         // Vorerst nur lesend für die Kundenansicht. Das Modul Aufträge folgt in einem eigenen Schritt.

@@ -1,3 +1,4 @@
+using Auftragsverwaltung.Api.Sicherheit;
 using Auftragsverwaltung.Domain.Kunden;
 using Auftragsverwaltung.Infrastructure;
 
@@ -10,6 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("AvDb")
 builder.Services.AddInfrastruktur(connectionString);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<KundenVerwaltung>();
+builder.Services.AddSicherheit(builder.Configuration);
 
 builder.Services
     .AddControllers()
@@ -18,8 +20,11 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok("ok"));
+app.MapGet("/health", () => Results.Ok("ok")).AllowAnonymous();
 
 app.Run();
 
