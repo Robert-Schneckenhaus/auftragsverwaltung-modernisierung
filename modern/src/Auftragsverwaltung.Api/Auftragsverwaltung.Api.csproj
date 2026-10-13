@@ -2,5 +2,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Auftragsverwaltung.Domain\Auftragsverwaltung.Domain.csproj" />
     <ProjectReference Include="..\Auftragsverwaltung.Infrastructure\Auftragsverwaltung.Infrastructure.csproj" />
+    <ProjectReference Include="..\Auftragsverwaltung.Sicherheit\Auftragsverwaltung.Sicherheit.csproj" />
   </ItemGroup>
 </Project>

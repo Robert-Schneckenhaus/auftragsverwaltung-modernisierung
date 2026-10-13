@@ -17,3 +17,6 @@ dist/
 appsettings.*.local.json
 *.log
 .DS_Store
+
+# Data-Protection-Schlüssel (lokal, nie einchecken)
+.dp-schluessel/

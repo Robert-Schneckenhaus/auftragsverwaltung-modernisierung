@@ -59,7 +59,8 @@ jobs:
         run: |
           API=modern/src/Auftragsverwaltung.Api/bin/Release/net10.0/Auftragsverwaltung.Api.dll
           dotnet $API --urls http://localhost:5080 > api.log 2>&1 &
-          Sicherheit__AnmeldungErforderlich=true dotnet $API --urls http://localhost:5081 > api-sicher.log 2>&1 &
+          Sicherheit__AnmeldungErforderlich=true Sicherheit__SchluesselPfad=/tmp/av-schluessel \
+            dotnet $API --urls http://localhost:5081 > api-sicher.log 2>&1 &
           for port in 5080 5081; do
             for i in $(seq 1 30); do curl -sf http://localhost:$port/health > /dev/null && break; sleep 1; done
             curl -sf http://localhost:$port/health > /dev/null || { cat api.log api-sicher.log; exit 1; }
@@ -75,6 +76,23 @@ jobs:
           AV_SICHERHEIT_URL: http://localhost:5081/
         run: dotnet test modern/tests/Auftragsverwaltung.Sicherheitstests -c Release --no-build --logger "console;verbosity=normal"
 
+      - name: Proxy mit Anmeldepflicht vor API und Legacy-Attrappe starten
+        run: |
+          python3 -m http.server 5090 --directory modern/tests/Auftragsverwaltung.Sicherheitstests/LegacyAttrappe > attrappe.log 2>&1 &
+          Sicherheit__AnmeldungErforderlich=true \
+          Sicherheit__SchluesselPfad=/tmp/av-schluessel \
+          ReverseProxy__Clusters__modern__Destinations__api__Address=http://localhost:5081/ \
+          ReverseProxy__Clusters__legacy__Destinations__iis__Address=http://localhost:5090/ \
+            dotnet modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0/Auftragsverwaltung.Proxy.dll \
+              --contentRoot modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0 --urls http://localhost:5082 > proxy.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:5082/index.html > /dev/null && exit 0; sleep 1; done
+          cat proxy.log attrappe.log; exit 1
+
+      - name: Proxy-Tests (Legacy-Routen geschützt)
+        env:
+          AV_PROXY_URL: http://localhost:5082/
+        run: dotnet test modern/tests/Auftragsverwaltung.Sicherheitstests -c Release --no-build --logger "console;verbosity=normal"
+
       - name: Prüfen, dass angemeldete Benutzer keine Klartextpasswörter mehr haben
         run: |
           docker exec ${{ job.services.sql.id }} /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P $SA_PASSWORD -b -d Auftragsverwaltung -Q "
@@ -84,7 +102,7 @@ jobs:
 
       - name: API-Logs bei Fehler
         if: failure()
-        run: cat api.log api-sicher.log || true
+        run: cat api.log api-sicher.log proxy.log || true
 
       - name: Abhängigkeiten auf Sicherheitslücken prüfen
         run: dotnet list modern/Auftragsverwaltung.slnx package --vulnerable --include-transitive

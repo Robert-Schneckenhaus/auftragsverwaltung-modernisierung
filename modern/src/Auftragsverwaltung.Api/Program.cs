@@ -11,7 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("AvDb")
 builder.Services.AddInfrastruktur(connectionString);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<KundenVerwaltung>();
-builder.Services.AddSicherheit(builder.Configuration);
+builder.Services.AddSicherheit(builder.Configuration, builder.Environment);
 
 builder.Services
     .AddControllers()
