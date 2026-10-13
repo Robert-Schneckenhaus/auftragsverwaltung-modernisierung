@@ -86,7 +86,10 @@ jobs:
             dotnet modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0/Auftragsverwaltung.Proxy.dll \
               --contentRoot modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0 --urls http://localhost:5082 > proxy.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:5082/index.html > /dev/null && exit 0; sleep 1; done
-          cat proxy.log attrappe.log; exit 1
+          cat proxy.log attrappe.log
+          # Log zusätzlich als Annotation, damit es auch ohne Login im Run sichtbar ist
+          echo "::error title=Proxy-Start fehlgeschlagen::$(tail -c 3000 proxy.log | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')"
+          exit 1
 
       - name: Proxy-Tests (Legacy-Routen geschützt)
         env:
