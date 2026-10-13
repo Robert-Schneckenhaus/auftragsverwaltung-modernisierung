@@ -10,7 +10,7 @@ jobs:
     name: Legacy-Build (.NET Framework 4.8)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: microsoft/setup-msbuild@v2
       - uses: NuGet/setup-nuget@v2
       - run: nuget restore legacy/Auftragsverwaltung.sln
@@ -32,8 +32,8 @@ jobs:
         ports:
           - 1433:1433
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -84,7 +84,7 @@ jobs:
           ReverseProxy__Clusters__modern__Destinations__api__Address=http://localhost:5081/ \
           ReverseProxy__Clusters__legacy__Destinations__iis__Address=http://localhost:5090/ \
             dotnet modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0/Auftragsverwaltung.Proxy.dll \
-              --contentRoot modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0 --urls http://localhost:5082 > proxy.log 2>&1 &
+              --contentRoot "$PWD/modern/src/Auftragsverwaltung.Proxy/bin/Release/net10.0" --urls http://localhost:5082 > proxy.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://localhost:5082/index.html > /dev/null && exit 0; sleep 1; done
           cat proxy.log attrappe.log
           # Log zusätzlich als Annotation, damit es auch ohne Login im Run sichtbar ist
