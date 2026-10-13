@@ -49,20 +49,35 @@ Ein Teil der Migration wurde mit **Claude Code** als Werkzeug durchgeführt, ges
 
 Kurz gesagt: KI beschleunigt Fleißarbeit wie das Umschreiben von Controllern oder das Erzeugen von Tests. Architekturentscheidungen, Code-Review und fachliche Prüfung bleiben Handarbeit.
 
+## Aktueller Stand
+
+[![CI](https://github.com/Robert-Schneckenhaus/auftragsverwaltung-modernisierung/actions/workflows/ci.yml/badge.svg)](https://github.com/Robert-Schneckenhaus/auftragsverwaltung-modernisierung/actions/workflows/ci.yml)
+
+- ✅ Legacy-Anwendung inkl. [Altlasten-Katalog](legacy/README.md#altlasten-katalog)
+- ✅ Modernes Fundament: .NET 10, EF Core auf dem bestehenden Schema, YARP als Strangler-Proxy
+- ✅ **Modul Kunden migriert**, abgesichert durch 19 Charakterisierungstests, die in der CI gegen einen echten SQL Server laufen
+- ⏳ Aufträge, Rechnungen, Login · Angular-Frontend
+
+Details und nächste Schritte: [Migrationsplan](docs/MIGRATIONSPLAN.md#fortschritt)
+
 ## Projekt lokal starten
 
-```bash
-# Modernes Backend
-cd modern
-dotnet run --project src/Api
+Voraussetzungen: .NET 10 SDK, SQL Server (LocalDB genügt), für `legacy/` zusätzlich Windows mit Visual Studio 2022.
 
-# Modernes Frontend
-cd modern/web
-npm install
-npm start
+```bash
+# Datenbank anlegen (einmalig bzw. für frische Testdaten)
+sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i legacy/Datenbank/01_schema.sql
+sqlcmd -S "(LocalDB)\MSSQLLocalDB" -f 65001 -i legacy/Datenbank/02_testdaten.sql
+
+# Modernes Backend (http://localhost:5080)
+dotnet run --project modern/src/Auftragsverwaltung.Api
+
+# Tests
+dotnet test modern/tests/Auftragsverwaltung.Domain.Tests
+AV_BASE_URL=http://localhost:5080/ dotnet test modern/tests/Auftragsverwaltung.Charakterisierung
 ```
 
-Details zu Voraussetzungen folgen, sobald die Implementierung steht.
+Wie man das alte Frontend über den Proxy mit dem neuen Backend betreibt, steht im [Migrationsplan](docs/MIGRATIONSPLAN.md#strangler-proxy-lokal-ausprobieren).
 
 ## Struktur
 
@@ -71,9 +86,9 @@ legacy/      Ausgangszustand: .NET Framework 4.8 + AngularJS (Starten: legacy/RE
   Auftragsverwaltung.Web/   Web API 2, EF6, AngularJS-Frontend
   Datenbank/                SQL-Schema und Testdaten
 modern/      Zielzustand: aktuelles .NET + Angular
-  src/       Api, Domain, Infrastructure
-  tests/     Automatisierte Tests
-  web/       Angular-Frontend
+  src/       Api, Domain (Fachlogik), Infrastructure (EF Core), Proxy (YARP)
+  tests/     Domain-Tests, Charakterisierungstests (gegen legacy/ und modern/)
+  web/       Angular-Frontend (folgt)
 docs/        Migrationsplan, Architekturentscheidungen (ADRs), Screenshots
 ```
 

@@ -75,9 +75,33 @@ Claude Code wird als Werkzeug eingesetzt, nicht als Autopilot.
 
 ## Fortschritt
 
-- [ ] Phase 0: Bestandsaufnahme
-- [ ] Phase 1: Sicherheitsnetz
-- [ ] Phase 2: Fundament
-- [ ] Phase 3: Backend
-- [ ] Phase 4: Frontend
-- [ ] Phase 5: Abschluss
+- [x] **Phase 0: Bestandsaufnahme**: API-Übersicht und Altlasten-Katalog in [`legacy/README.md`](../legacy/README.md)
+- [ ] **Phase 1: Sicherheitsnetz**
+  - [x] Charakterisierungstests Modul Kunden (19 Tests, `modern/tests/Auftragsverwaltung.Charakterisierung`)
+  - [x] Grün gegen `modern/` (CI)
+  - [ ] Grün gegen `legacy/` (lokal unter Windows, siehe unten)
+  - [ ] Module Aufträge, Rechnungen, Login
+- [x] **Phase 2: Fundament**: Solution, EF Core auf Legacy-Schema, CI mit SQL Server, YARP-Proxy
+- [ ] **Phase 3: Backend**
+  - [x] Kunden: migriert, Proxy-Route `api/kunden` zeigt auf `modern/`
+  - [ ] Aufträge und Positionen
+  - [ ] Rechnungen
+  - [ ] Benutzer und Authentifizierung (Vorschlag: vorziehen, siehe [ADR 0003](adr/0003-sicherheits-baseline.md))
+- [ ] **Phase 4: Frontend**
+- [ ] **Phase 5: Abschluss**
+
+### Charakterisierungstests gegen das Legacy-System ausführen
+
+1. Datenbank frisch anlegen (siehe [`legacy/README.md`](../legacy/README.md#starten-windows)) und Legacy-Anwendung in Visual Studio starten
+2. Tests ausführen:
+   ```bat
+   set AV_BASE_URL=http://localhost:51400/
+   dotnet test modern\tests\Auftragsverwaltung.Charakterisierung
+   ```
+3. Danach Datenbank erneut frisch anlegen und dieselben Tests gegen die moderne API laufen lassen (`AV_BASE_URL=http://localhost:5080/`)
+
+Ohne `AV_BASE_URL` werden die Tests übersprungen.
+
+### Strangler-Proxy lokal ausprobieren
+
+Legacy-Anwendung (Port 51400), moderne API (`dotnet run --project modern/src/Auftragsverwaltung.Api`, Port 5080) und Proxy (`dotnet run --project modern/src/Auftragsverwaltung.Proxy`, Port 5000) starten, dann http://localhost:5000 öffnen. Das alte AngularJS-Frontend läuft unverändert, die Kundenverwaltung wird aber bereits vom modernen Backend bedient.
